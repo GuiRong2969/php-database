@@ -82,7 +82,7 @@ $result = $server->setIgnoreTable($tables)->backup($backupDir)
 
 $backupFileName = '我的mysql备份文件-1';
 
-$result = $server->setBackupFilename($fileName)->setIgnoreTable($tables)->backup($backupDir)
+$result = $server->setBackupFilename($backupFileName)->setIgnoreTable($tables)->backup($backupDir)
 
 ```
 > 备份成功后，获得文件路径: `/www/wwwroot/my_project/database/backup/我的mysql备份文件-1.sql`
