@@ -55,7 +55,7 @@ $backupDir = '/www/wwwroot/my_project/database/backup/';
 $result = $server->backup($backupDir);
 
 if(!$result){
-    echo '备份失败，错误信息：'$server->getError();
+    echo '备份失败，错误信息：'.$server->getError();
     exit;
 }
 
@@ -124,7 +124,7 @@ $server->setRecoveryFile($filename);
 $result = $server->recovery();
 
 if(!$result){
-    echo '恢复失败，错误信息：'$server->getError();
+    echo '恢复失败，错误信息：'.$server->getError();
     exit;
 }
 
