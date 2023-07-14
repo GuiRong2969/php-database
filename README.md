@@ -171,3 +171,7 @@ $server->setRecoveryFile($filename)->setRecoveryTable($tables)->recovery();
 ### `guirong/php-shell` [github](https://github.com/GuiRong2969/php-shell)
 
 一个基于`psysh shell`的命令行交互模式依赖包
+
+### `guirong/laravel-validate` [github](https://github.com/GuiRong2969/laravel-validate)
+
+基于`Laravel` 验证器扩展验证场景
