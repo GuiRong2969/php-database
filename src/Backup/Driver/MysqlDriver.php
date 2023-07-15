@@ -18,13 +18,7 @@ class MysqlDriver
     protected $name = '';
     protected $pass = '';
     protected $port = '';
-    protected $tables = ['*'];
-    protected $ignoreTables = [];
     protected $db;
-    protected $backupFilename = '';
-    protected $puck = false;
-    protected $recoveryTables = [];
-    protected $recoverySql = '';
 
     public function __construct($host = null, $user = null, $name = null, $pass = null, $port = 3306)
     {
@@ -35,10 +29,29 @@ class MysqlDriver
             $this->pass = $pass;
             $this->user = $user;
         }
-        $this->db = new PDO('mysql:host=' . $this->host . ';dbname=' . $this->name . '; port=' . $this->port, $this->user, $this->pass, array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
-
-        $this->db->exec('SET NAMES "utf8mb4"');
+        $this->connection();
         return $this;
+    }
+
+    /**
+     * 连接mysql
+     *
+     * @return void
+     */
+    protected function connection(){
+        if(!$this->db){
+            $this->db = new PDO('mysql:host=' . $this->host . ';dbname=' . $this->name . '; port=' . $this->port, $this->user, $this->pass, array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
+            $this->db->exec('SET NAMES "utf8mb4"');
+        }
+    }
+
+    /**
+     * 清除连接
+     *
+     * @return void
+     */
+    protected function clearConnection(){
+        $this->db = null;
     }
 
     /**

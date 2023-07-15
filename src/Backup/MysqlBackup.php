@@ -16,6 +16,14 @@ use ZipArchive;
 
 class MysqlBackup extends MysqlDriver
 {
+    protected $backupFilename = '';
+    protected $tables = ['*'];
+    protected $ignoreTables = [];
+    protected $puck = false;
+    protected $recoveryFile;
+    protected $recoveryTables = [];
+    protected $recoverySql = '';
+
     use CallResultTrait;
 
     /**
@@ -275,7 +283,7 @@ class MysqlBackup extends MysqlDriver
      */
     public function setRecoveryFile($filepath)
     {
-        $this->recoverySql = file_get_contents($filepath);
+        $this->recoveryFile = $filepath;
         return $this;
     }
 
@@ -313,34 +321,6 @@ class MysqlBackup extends MysqlDriver
     }
 
     /**
-     * 导入Insert语句sql片段
-     * @desc 在表数据量大的情况下，多行Insert语句字符数量可能超过mysql数据库单次执行sql最大字符长度的限制，故按行拆分每一条Insert语句
-     * @param string $sql
-     * @return void
-     */
-    protected function execInsertSql($sql)
-    {
-        $sqlList = explode(PHP_EOL, $sql);
-        foreach ($sqlList as $sql) {
-            $this->execSql($sql);
-        }
-    }
-
-    /**
-     * 导入sql片段
-     * @param string $sql
-     * @return void
-     */
-    protected function execSqlInfo($sql)
-    {
-        if ($this->isInsertSql($sql)) {
-            $this->execInsertSql($sql);
-        } else {
-            $this->execSql($sql);
-        }
-    }
-
-    /**
      * 导入sql语句
      * @param string $sql
      * @return void
@@ -359,26 +339,62 @@ class MysqlBackup extends MysqlDriver
     public function recovery()
     {
         try {
+            $this->recoverySql = file_get_contents($this->recoveryFile);
             if ($this->recoverySql == '') {
                 throw new Exception('请先设置正确的恢复文件,method:' . (__CLASS__) . '->setRecoveryFile($filepath)');
             }
-            if (!$this->recoveryTables) {
-                $sqlList = $this->resloveSqlToList($this->recoverySql);
-                foreach ($sqlList as $sqlinfo) {
-                    $this->execSqlInfo($sqlinfo);
-                }
-            } else {
-                foreach ($this->recoveryTables as $table) {
-                    $tableSql = $this->getRecoveryTableSql($table);
-                    $sqlList = $this->resloveSqlToList($tableSql);
-                    foreach ($sqlList as $sqlinfo) {
-                        $this->execSqlInfo($sqlinfo);
-                    }
-                }
-            }
+            //调整内存限制
+            $this->setMaxAallowedPacket();
+            $this->execSql(
+                $this->getRecoverySql()
+            );
         } catch (Exception $e) {
             $this->setError($e->getMessage());
         }
         return $this->judgeTrue();
+    }
+
+    /**
+     * 获取导入的sql
+     *
+     * @return string
+     */
+    protected function getRecoverySql()
+    {
+        if (!$this->recoveryTables) {
+            return $this->recoverySql;
+        }
+        $list = [];
+        foreach ($this->recoveryTables as $table) {
+            $tableSql = $this->getRecoveryTableSql($table);
+            if ($table != '') {
+                $list[] = $tableSql;
+            }
+        }
+        $this->recoverySql = $list ? implode(PHP_EOL, $list) : '';
+        return $this->recoverySql;
+    }
+
+    /**
+     * 设置mysql单次可执行sql的最大内存
+     *
+     * @return void
+     */
+    protected function setMaxAallowedPacket()
+    {
+        $list = $this->db->query('SELECT @@global.max_allowed_packet');
+        $resetList = [];
+        foreach ($list as $key => $value) {
+            $resetList[$key] = $value;
+        }
+        $filesize = filesize($this->recoveryFile);
+        if (isset($resetList[0]['@@global.max_allowed_packet']) && $filesize >= $resetList[0]['@@global.max_allowed_packet']) {
+            $this->db->exec('SET @@global.max_allowed_packet = ' . ($filesize + 1024));
+            //throw new Exception('备份文件超过配置max_allowed_packet大小，请修改Mysql服务器配置');
+
+            //修改配置后，必须清除并重连一次mysql
+            $this->clearConnection();
+            $this->connection();
+        }
     }
 }
