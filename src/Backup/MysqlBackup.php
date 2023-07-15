@@ -271,11 +271,12 @@ class MysqlBackup extends MysqlDriver
     /**
      * 设置恢复文件
      * @param string $filepath
-     * @return void
+     * @return $this
      */
     public function setRecoveryFile($filepath)
     {
         $this->recoverySql = file_get_contents($filepath);
+        return $this;
     }
 
     /**

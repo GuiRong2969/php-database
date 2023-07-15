@@ -117,9 +117,9 @@ $server = new MysqlBackup($config['host'],$config['username'],$config['database'
 
 ```php
 
-$backpFile = '/www/wwwroot/my_project/database/backup/mysql-my_database-202307131630.sql';
+$backupFile = '/www/wwwroot/my_project/database/backup/mysql-my_database-202307131630.sql';
 
-$result = $server->setRecoveryFile($backpFile)->recovery();
+$result = $server->setRecoveryFile($backupFile)->recovery();
 
 if(!$result){
     echo '恢复失败，错误信息：'.$server->getError();
@@ -134,7 +134,7 @@ if(!$result){
 
 $tables = ['table_shop','table_user','table_goods'];
 
-$server->setRecoveryFile($backpFile)->setRecoveryTable($tables)->recovery();
+$server->setRecoveryFile($backupFile)->setRecoveryTable($tables)->recovery();
 
 ```
 
