@@ -172,7 +172,6 @@ class MysqlBackup extends MysqlDriver
                 $sqldump .= "-- ----------------------------------\n";
                 $sqldump .= "-- List the data for the table\n";
                 $sqldump .= "-- ----------------------------------\n";
-                $sqldump .= "-- Insert the following data into the table start\n\n";
                 # MYSQL DUMP: Insert into each table
                 $insertSql = "INSERT INTO `" . $table[0] . "` (";
                 // $sqldump .= "INSERT INTO `" . $table[0] . "` (";
@@ -308,16 +307,6 @@ class MysqlBackup extends MysqlDriver
         $start = mb_stripos($this->recoverySql, "-- table $table start");
         $end = mb_stripos($this->recoverySql, "-- table $table end");
         return mb_substr($this->recoverySql, $start, $end - $start);
-    }
-
-    /**
-     * 判断是否insert语句片段
-     * @param string $sql
-     * @return boolean
-     */
-    protected function isInsertSql($sql)
-    {
-        return substr(ltrim($sql), 0, 49) == '-- Insert the following data into the table start';
     }
 
     /**
