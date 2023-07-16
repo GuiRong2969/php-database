@@ -367,7 +367,7 @@ class MysqlBackup extends MysqlDriver
         $list = [];
         foreach ($this->recoveryTables as $table) {
             $tableSql = $this->getRecoveryTableSql($table);
-            if ($table != '') {
+            if ($tableSql != '') {
                 $list[] = $tableSql;
             }
         }
