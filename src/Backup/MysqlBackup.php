@@ -172,9 +172,11 @@ class MysqlBackup extends MysqlDriver
                 $sqldump .= "-- ----------------------------------\n";
                 $sqldump .= "-- List the data for the table\n";
                 $sqldump .= "-- ----------------------------------\n";
+                $sqldump .= "BEGIN;\n";
+
                 # MYSQL DUMP: Insert into each table
-                $insertSql = "INSERT INTO `" . $table[0] . "` (";
-                // $sqldump .= "INSERT INTO `" . $table[0] . "` (";
+                $insertSql = "INSERT INTO `" . $table[0] . "` VALUES (";
+
                 # ARRAY
                 $rows = [];
                 $numeric = [];
@@ -183,8 +185,7 @@ class MysqlBackup extends MysqlDriver
                     $rows[] = "`" . $row[0] . "`";
                     $numeric[] = (bool)preg_match('#^[^(]*(BYTE|COUNTER|SERIAL|INT|LONG$|CURRENCY|REAL|MONEY|FLOAT|DOUBLE|DECIMAL|NUMERIC|NUMBER)#i', $row[1]);
                 }
-                $insertSql .= implode(', ', $rows);
-                $insertSql .= ") VALUES (";
+                 
                 # COUNT
                 $c = 0;
                 # LOOP: Get the tables
@@ -210,6 +211,7 @@ class MysqlBackup extends MysqlDriver
                     $sqldump .= implode(', ', $cdata);
                     $sqldump .= ");\n";
                 }
+                $sqldump .= "COMMIT;\n";
             }
             $sqldump .= "-- table $table[0] end\n\n";
         }
