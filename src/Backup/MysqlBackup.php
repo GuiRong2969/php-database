@@ -289,6 +289,7 @@ class MysqlBackup extends MysqlDriver
     public function setRecoveryFile($filepath)
     {
         $this->recoveryFile = $filepath;
+        $this->recoverySql = file_get_contents($this->recoveryFile);
         return $this;
     }
 
@@ -334,7 +335,6 @@ class MysqlBackup extends MysqlDriver
     public function recovery()
     {
         try {
-            $this->recoverySql = file_get_contents($this->recoveryFile);
             if ($this->recoverySql == '') {
                 throw new Exception('请先设置正确的恢复文件,method:' . (__CLASS__) . '->setRecoveryFile($filepath)');
             }
